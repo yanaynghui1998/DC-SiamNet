@@ -21,10 +21,10 @@ def fftshift(x, axes=None):
     """
     Similar to np.fft.fftshift but applies to PyTorch Tensors
     """
-    assert torch.is_tensor(x) is True#判断输入是否是张量
+    assert torch.is_tensor(x) is True
     if axes is None:
-        axes = tuple(range(x.ndim()))#x.ndim()指的是x的维度,tuple指的是元组()。
-        shift = [dim // 2 for dim in x.shape]#将x.shape对半输出,并且每个元素重复一个，输出[1，1，256，256]
+        axes = tuple(range(x.ndim()))
+        shift = [dim // 2 for dim in x.shape]
     elif isinstance(axes, int):
         shift = x.shape[axes] // 2
     else:
