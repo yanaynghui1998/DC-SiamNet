@@ -126,7 +126,7 @@ def forward(mode, rank, model, dataloader, perce_loss,criterion, optimizer, log)
     assert mode in ['train', 'val', 'test']
     loss, psnr, ssim ,save_loss= 0.0, 0.0,0.0,0.0
     t = tqdm(dataloader, desc=mode + 'ing', total=int(len(dataloader))) if rank == 0 else dataloader
-    for iter_num, data_batch in enumerate(t):#enumerate返回的是一个字典,第一个代表的是键，第二代表的是值,键就是顺序序号
+    for iter_num, data_batch in enumerate(t):
         label = data_batch[0].to(rank, non_blocking=True)#(1,256,256,1)
         mask_under = data_batch[1].to(rank, non_blocking=True)
         mask_net_up = data_batch[2].to(rank, non_blocking=True)
@@ -154,7 +154,7 @@ def forward(mode, rank, model, dataloader, perce_loss,criterion, optimizer, log)
         recon_loss_up = criterion(output_up_kspace * mask_under, under_kspace)
         recon_loss_down = criterion(output_down_kspace * mask_under, under_kspace)
         image_loss=criterion(output_up,f_mid_image)+criterion(output_down,f_mid_image)
-        batch_loss = 10 * recon_loss_up + 10 * recon_loss_down+0.01*image_c_loss+0.1*image_loss#0.001,0.1
+        batch_loss = recon_loss_up + recon_loss_down+0.01*image_c_loss+0.1*image_loss
         total_loss=image_c_loss
         if mode == 'train':
             optimizer.zero_grad()
