@@ -60,16 +60,16 @@ class Attention_Ga_Pooling(nn.Module):
             self.filters=[feature_dim[1]//2,feature_dim[1]//4,feature_dim[1]//8]
         self.droup_out=nn.Dropout2d(p=0.5)
         self.flow_net = nn.Sequential(
-                    nn.Conv2d(feature_dim[1],self.filters[0],kernel_size=(1,1),padding='same'),#128
+                    nn.Conv2d(feature_dim[1],self.filters[0],kernel_size=(3,3),padding='same'),
                     nn. BatchNorm2d(self.filters[0]),
                     nn.ReLU(inplace=True),
-                    nn.Conv2d(self.filters[0], self.filters[1], kernel_size=(1, 1),padding='same'),#64
+                    nn.Conv2d(self.filters[0], self.filters[1], kernel_size=(3, 3),padding='same'),
                     nn.BatchNorm2d(self.filters[1]),
                     nn.ReLU(inplace=True),
-                    nn.Conv2d(self.filters[1], self.filters[2], kernel_size=(1, 1),padding='same'),#32
+                    nn.Conv2d(self.filters[1], self.filters[2], kernel_size=(3, 3),padding='same'),
                     nn.BatchNorm2d(self.filters[2]),
                     nn.ReLU(inplace=True),
-                    nn.Conv2d(self.filters[2], 1, kernel_size=(1, 1),padding='valid'),#1
+                    nn.Conv2d(self.filters[2], 1, kernel_size=(1, 1),padding='valid'),
                     nn.Sigmoid()
                 )
         self.conv_att=nn.Conv2d(1,feature_dim[1],kernel_size=(1,1),bias=False,padding='same')
@@ -80,10 +80,10 @@ class Attention_Ga_Pooling(nn.Module):
     def forward(self,feature):
         attn_layer=feature#(2,256,16,16)
         attn_layer=self.droup_out(attn_layer)
-        attn_layer=self.flow_net(attn_layer)#(2,1,16,16)计算出注意力图
-        attn_layer=self.conv_att(attn_layer)#(2,256,16,16)把注意力图扩张到每个通道
+        attn_layer=self.flow_net(attn_layer)
+        attn_layer=self.conv_att(attn_layer)
         mask_attn_layer=torch.multiply(attn_layer,feature)
-        gap_features=self.GAP(mask_attn_layer)#(2,256,1,1)
+        gap_features=self.GAP(mask_attn_layer)
         gap_mask=self.GAP(attn_layer)
         gap=(lambda x:x[0]/x[1])([gap_features,gap_mask])
         gap_out=self.fl(gap)
@@ -101,7 +101,7 @@ class Generator(nn.Module):
         out,encoder_out=self.UNet_Ispace(x)
         rec_img = torch.tanh(out + x)
         rec_img=torch.clamp(rec_img,0,1)
-        x_dc = self.DC(rec_img, under_img, sub_mask)  # under_image是永恒不变的，x是前一个模块的输出
+        x_dc = self.DC(rec_img, under_img, sub_mask) 
         gap_out=self.gap(encoder_out)
         x_dc = torch.clamp(x_dc, 0, 1)
         return  [x_dc,gap_out]
