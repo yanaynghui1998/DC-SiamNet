@@ -1,6 +1,6 @@
 from net.unet import *
 from image_contrastive_loss import BYOL_Loss
-class ISTANetPlus(nn.Module):
+class SiameseNet(nn.Module):
     def __init__(self,rank,num_layers):
         super(ISTANetPlus, self).__init__()
         self.rank=rank
@@ -19,7 +19,7 @@ class ISTANetPlus(nn.Module):
         return [x_final,encoder]
 
 class MLP(nn.Module):
-    def __init__(self, in_dim=256, hidden_dim=128,out_dim=256): # bottleneck structure#,1024,256
+    def __init__(self, in_dim=256, hidden_dim=128,out_dim=256): 
         super().__init__()
         self.layer = nn.Sequential(
             nn.Linear(in_dim, hidden_dim),
@@ -36,7 +36,7 @@ class ParallelNetwork(nn.Module):
         super(ParallelNetwork, self).__init__()
         self.rank=rank
         self.num_layers = num_layers
-        self.network = ISTANetPlus(self.rank,self.num_layers)
+        self.network = SiameseNet(self.rank,self.num_layers)
         self.project_head=MLP()
         self.predict_head=MLP()
         self.conloss=BYOL_Loss()
